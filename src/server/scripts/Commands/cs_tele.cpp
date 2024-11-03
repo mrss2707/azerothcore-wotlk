@@ -57,6 +57,7 @@ public:
             { "del",    HandleTeleDelCommand,            SEC_ADMINISTRATOR, Console::Yes },
             { "name",   teleNameCommandTable },
             { "group",  HandleTeleGroupCommand,          SEC_GAMEMASTER,    Console::No },
+            { "player", HandleTelePlayerCommand,         SEC_GAMEMASTER,    Console::No },
             { "",       HandleTeleCommand,               SEC_GAMEMASTER,    Console::No }
         };
         static ChatCommandTable commandTable =
@@ -272,6 +273,27 @@ public:
             player->TeleportTo(tele->mapId, tele->position_x, tele->position_y, tele->position_z, tele->orientation);
         }
 
+        return true;
+    }
+
+    static bool HandleTelePlayerCommand(ChatHandler* handler, Optional<PlayerIdentifier> target) {
+        if (!target) {
+            target = PlayerIdentifier::FromTargetOrSelf(handler);
+        }
+
+        if (!target) {
+            return false;
+        }
+        
+        Player* player = handler->GetSession()->GetPlayer();
+        if (player->IsInCombat()) {
+            handler->SendErrorMessage(LANG_YOU_IN_COMBAT);
+            return false;
+        }
+
+        Player* targetPlayer = target->GetConnectedPlayer();
+
+        player->TeleportTo(targetPlayer->m_mapId, targetPlayer->m_positionX, targetPlayer->m_positionY, targetPlayer->m_positionZ, targetPlayer->m_orientation);
         return true;
     }
 
