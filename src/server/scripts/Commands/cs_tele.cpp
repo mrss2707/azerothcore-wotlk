@@ -73,7 +73,7 @@ public:
         if (!player)
             return false;
 
-        if (sObjectMgr->GetGameTele(name))
+        if (sObjectMgr->GetGameTele(name, true))
         {
             handler->SendErrorMessage(LANG_COMMAND_TP_ALREADYEXIST);
             return false;
