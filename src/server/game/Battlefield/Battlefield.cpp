@@ -31,6 +31,7 @@
 #include "ObjectMgr.h"
 #include "Transport.h"
 #include "WorldPacket.h"
+#include "Chat.h"
 
 /// @todo: this import is not necessary for compilation and marked as unused by the IDE
 //  however, for some reasons removing it would cause a damn linking issue
@@ -336,6 +337,26 @@ void Battlefield::StartBattle()
 {
     if (m_isActive)
         return;
+
+    if (m_BattleId == 1) {
+        uint32 minPlayerPerTeam = sWorld->getIntConfig(CONFIG_WINTERGRASP_PLR_MIN_PER_TEAM);;
+        if (m_PlayersInQueue[0].size() <= minPlayerPerTeam || m_PlayersInQueue[1].size() <= minPlayerPerTeam) {
+            for (uint8 team = 0; team < PVP_TEAMS_COUNT; ++team) {
+                GuidUnorderedSet copy(m_PlayersInQueue[team]);
+                for (GuidUnorderedSet::const_iterator itr = copy.begin(); itr != copy.end(); ++itr) {
+                    if (Player* player = ObjectAccessor::FindPlayer(*itr)) {
+                        if (m_PlayersInWar[player->GetTeamId()].size() + m_InvitedPlayers[player->GetTeamId()].size() < m_MaxPlayer) {
+                            ChatHandler(player->GetSession()).SendSysMessage("Need " + std::to_string(minPlayerPerTeam) + " player per team to start Wintergrasp!!!");
+                        }
+                    }
+                }
+            }
+            // Reset battlefield timer
+            m_Timer = m_NoWarBattleTime;
+            SendInitWorldStatesToAll();
+            return;
+        }
+    }
 
     for (int team = 0; team < PVP_TEAMS_COUNT; team++)
     {
