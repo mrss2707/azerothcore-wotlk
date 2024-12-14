@@ -340,7 +340,7 @@ void Battlefield::StartBattle()
 
     if (m_BattleId == 1) {
         uint32 minPlayerPerTeam = sWorld->getIntConfig(CONFIG_WINTERGRASP_PLR_MIN_PER_TEAM);;
-        if (m_PlayersInQueue[0].size() <= minPlayerPerTeam || m_PlayersInQueue[1].size() <= minPlayerPerTeam) {
+        if (m_PlayersInQueue[0].size() < minPlayerPerTeam || m_PlayersInQueue[1].size() < minPlayerPerTeam) {
             for (uint8 team = 0; team < PVP_TEAMS_COUNT; ++team) {
                 GuidUnorderedSet copy(m_PlayersInQueue[team]);
                 for (GuidUnorderedSet::const_iterator itr = copy.begin(); itr != copy.end(); ++itr) {
