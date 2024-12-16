@@ -352,7 +352,7 @@ void Battlefield::StartBattle()
                 }
             }
             // Reset battlefield timer
-            m_Timer = m_NoWarBattleTime;
+            m_Timer = m_BattleTime + m_NoWarBattleTime;
             SendInitWorldStatesToAll();
             return;
         }
