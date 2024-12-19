@@ -31,6 +31,7 @@
 #include "ObjectMgr.h"
 #include "Transport.h"
 #include "WorldPacket.h"
+#include "WorldSession.h"
 #include "Chat.h"
 
 /// @todo: this import is not necessary for compilation and marked as unused by the IDE
@@ -161,6 +162,27 @@ bool Battlefield::Update(uint32 diff)
 
     if (!IsEnabled())
         return false;
+
+    //TODO: Check player logout
+    if (!IsWarTime()) {
+        for (uint8 team = 0; team < PVP_TEAMS_COUNT; ++team) {
+            GuidUnorderedSet copy(m_PlayersInQueue[team]);
+            for (GuidUnorderedSet::const_iterator itr = copy.begin(); itr != copy.end(); ++itr) {
+                if (Player* player = ObjectAccessor::FindPlayer(*itr)) {
+
+                } else {
+                    m_PlayersInQueue[team].erase(*itr);
+                    // Send to World
+                    if (sWorld->getBoolConfig(CONFIG_BATTLEGROUND_QUEUE_ANNOUNCER_ENABLE)) {
+                        uint32 minPlayerPerTeam = sWorld->getIntConfig(CONFIG_WINTERGRASP_PLR_MIN_PER_TEAM);
+                        std::string text = "[SERVER] Player logout from queue Wintergrasp Battle! " + std::to_string(m_PlayersInQueue[0].size()) + " vs " + std::to_string(m_PlayersInQueue[1].size());
+                        sWorld->SendServerMessage(SERVER_MSG_STRING, text);
+                    }
+                    break;
+                }
+            }
+        }
+    }
 
     // Invite players a few minutes before the battle's beginning
     if (!IsWarTime() && !m_StartGrouping && m_Timer <= m_StartGroupingTimer)
@@ -339,7 +361,7 @@ void Battlefield::StartBattle()
         return;
 
     if (m_BattleId == 1) {
-        uint32 minPlayerPerTeam = sWorld->getIntConfig(CONFIG_WINTERGRASP_PLR_MIN_PER_TEAM);;
+        uint32 minPlayerPerTeam = sWorld->getIntConfig(CONFIG_WINTERGRASP_PLR_MIN_PER_TEAM);
         if (m_PlayersInQueue[0].size() < minPlayerPerTeam || m_PlayersInQueue[1].size() < minPlayerPerTeam) {
             for (uint8 team = 0; team < PVP_TEAMS_COUNT; ++team) {
                 GuidUnorderedSet copy(m_PlayersInQueue[team]);
@@ -416,6 +438,12 @@ void Battlefield::PlayerAcceptInviteToQueue(Player* player)
     m_PlayersInQueue[player->GetTeamId()].insert(player->GetGUID());
     // Send notification
     player->GetSession()->SendBfQueueInviteResponse(m_BattleId, m_ZoneId);
+    // Send to World
+    if (sWorld->getBoolConfig(CONFIG_BATTLEGROUND_QUEUE_ANNOUNCER_ENABLE)) {
+        uint32 minPlayerPerTeam = sWorld->getIntConfig(CONFIG_WINTERGRASP_PLR_MIN_PER_TEAM);
+        std::string text = "Player " + player->GetName() + " start queue for Wintergrasp Battle! " + std::to_string(m_PlayersInQueue[0].size()) + " vs " + std::to_string(m_PlayersInQueue[1].size());
+        sWorld->SendServerMessage(SERVER_MSG_STRING, Acore::StringFormat(player->GetSession()->GetAcoreString(LANG_SYSTEMMESSAGE), text));
+    }
 }
 
 // Called in WorldSession::HandleBfExitRequest
@@ -423,11 +451,20 @@ void Battlefield::AskToLeaveQueue(Player* player)
 {
     // Remove player from queue
     m_PlayersInQueue[player->GetTeamId()].erase(player->GetGUID());
+
+    // Send to World
+    if (sWorld->getBoolConfig(CONFIG_BATTLEGROUND_QUEUE_ANNOUNCER_ENABLE)) {
+        uint32 minPlayerPerTeam = sWorld->getIntConfig(CONFIG_WINTERGRASP_PLR_MIN_PER_TEAM);
+        std::string text = "Player " + player->GetName() + " end queue for Wintergrasp Battle! " + std::to_string(m_PlayersInQueue[0].size()) + " vs " + std::to_string(m_PlayersInQueue[1].size());
+        sWorld->SendServerMessage(SERVER_MSG_STRING, Acore::StringFormat(player->GetSession()->GetAcoreString(LANG_SYSTEMMESSAGE), text));
+    }
 }
 
 // Called in WorldSession::HandleHearthAndResurrect
 void Battlefield::PlayerAskToLeave(Player* player)
 {
+    AskToLeaveQueue(player);
+
     // Player leaving Wintergrasp, trigger Hearthstone spell.
     player->CastSpell(player, 8690, true);
 }
