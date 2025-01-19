@@ -24,7 +24,7 @@ public:
         }
 
         if (sV->isVip(player)) {
-            ChatHandler(player->GetSession()).PSendSysMessage("Tiempo de suscripcion vip disponible: |cff4CFF00%s|r", sV->getFormatedVipTime(player).c_str());
+            ChatHandler(player->GetSession()).PSendSysMessage("VIP subscription time available: |cff4CFF00%s|r", sV->getFormatedVipTime(player).c_str());
         }
 
         sV->delExpireVip(player);
@@ -96,12 +96,12 @@ public:
                 if (!player->HasItemCount(44824, 1, true)) {
                     player->AddItem(44824, 1);
                 }
-                ChatHandler(player->GetSession()).PSendSysMessage("Gracias por tu suscripcion vip.");
-                ChatHandler(player->GetSession()).PSendSysMessage("Tiempo de suscripcion vip disponible: %s", sV->getFormatedVipTime(player).c_str());
+                ChatHandler(player->GetSession()).PSendSysMessage("Thank you for your VIP subscription.");
+                ChatHandler(player->GetSession()).PSendSysMessage("VIP subscription time available: %s", sV->getFormatedVipTime(player).c_str());
                 OnGossipSelect(player, creature, 0, 2);
             }
             else {
-                ChatHandler(player->GetSession()).PSendSysMessage("No tienes suficientes Tokens.");
+                ChatHandler(player->GetSession()).PSendSysMessage("You do not have enough Tokens.");
                 CloseGossipMenuFor(player);
             }
             break;
@@ -113,11 +113,11 @@ public:
         case 4:
             if (!player->HasItemCount(44824, 1, true)) {
                 player->AddItem(44824, 1);
-                creature->Whisper("No lo vuelvas a perder.", LANG_UNIVERSAL, player, false);
+                creature->Whisper("Don't lose it again.", LANG_UNIVERSAL, player, false);
                 CloseGossipMenuFor(player);
             }
             else {
-                creature->Whisper("Ya tienes un item para invocar a tu mascota VIP.", LANG_UNIVERSAL, player, false);
+                creature->Whisper("You now have an item to summon your VIP pet.", LANG_UNIVERSAL, player, false);
                 OnGossipHello(player, creature);
             }
             break;
@@ -135,8 +135,8 @@ public:
 
     bool OnUse(Player* player, Item* /*item*/, SpellCastTargets const& /*targets*/) {
         if (!sV->isVip(player)) {
-            ChatHandler(player->GetSession()).PSendSysMessage("No eres Vip!");
-            ChatHandler(player->GetSession()).PSendSysMessage("Por favor renueva tu suscription vip.");
+            ChatHandler(player->GetSession()).PSendSysMessage("You are not VIP!");
+            ChatHandler(player->GetSession()).PSendSysMessage("Please renew your VIP subscription.");
             return false;
         }
 
@@ -146,7 +146,7 @@ public:
         }*/
 
         if (player->GetMap()->IsBattleArena()) {
-            ChatHandler(player->GetSession()).PSendSysMessage("No puedes usar en arena!");
+            ChatHandler(player->GetSession()).PSendSysMessage("You can't use it on sand!");
             return false;
         }
 
@@ -185,11 +185,11 @@ public:
         if(sV->vipZone)
             AddGossipItemFor(player, 0, "|TInterface/ICONS/Achievement_Zone_ZulDrak_12:28:28:-15:0|t Vip Zone", 0, 1);
         if(sV->armorRep)
-            AddGossipItemFor(player, 0, "|TInterface/ICONS/INV_Hammer_20:28:28:-15:0|t Reparar armaduras.", 0, 2);
+            AddGossipItemFor(player, 0, "|TInterface/ICONS/INV_Hammer_20:28:28:-15:0|t Repair Armor", 0, 2);
         if(sV->bankEnable)
-            AddGossipItemFor(player, 0, "|TInterface/ICONS/INV_Ingot_03:28:28:-15:0|t Mi Banco.", 0, 3);
+            AddGossipItemFor(player, 0, "|TInterface/ICONS/INV_Ingot_03:28:28:-15:0|t My Bank", 0, 3);
         if(sV->mailEnable)
-            AddGossipItemFor(player, 0, "|TInterface/ICONS/inv_letter_15:28:28:-15:0|t Mi Correo.", 0, 8);
+            AddGossipItemFor(player, 0, "|TInterface/ICONS/inv_letter_15:28:28:-15:0|t My Mail", 0, 8);
         if (sV->buffsEnable) {
             AddGossipItemFor(player, 0, "|TInterface/ICONS/Spell_Magic_GreaterBlessingofKings:28:28:-15:0|t Buffs", 0, 4);
             AddGossipItemFor(player, 0, "|TInterface/PAPERDOLLINFOFRAME/UI-GearManager-Undo:28:28:-15:0|t Remover Buffs", 0, 11);
@@ -199,12 +199,12 @@ public:
         if(sV->sicknessEnbale)
             AddGossipItemFor(player, 0, "|TInterface/ICONS/spell_shadow_deathscream:28:28:-15:0|t Remover dolencia.", 0, 6);
         if(sV->deserterEnable)
-            AddGossipItemFor(player, 0, "|TInterface/ICONS/ability_druid_cower:28:28:-15:0|t Quitar dersertor.", 0, 7);
+            AddGossipItemFor(player, 0, "|TInterface/ICONS/ability_druid_cower:28:28:-15:0|t Remove defector", 0, 7);
         if(sV->resetInstance)
-            AddGossipItemFor(player, 0, "|TInterface/ICONS/Achievement_Dungeon_Icecrown_IcecrownEntrance:28:28:-15:0|t Reinicar instancias.", 0, 9);
+            AddGossipItemFor(player, 0, "|TInterface/ICONS/Achievement_Dungeon_Icecrown_IcecrownEntrance:28:28:-15:0|t Restart instances", 0, 9);
         if(sV->saveTeleport)
             AddGossipItemFor(player, 0, "|TInterface/ICONS/Spell_Holy_LightsGrace:28:28:-15:0|t Mi teleport.", 0, 10);
-        AddGossipItemFor(player, 0, "|TInterface/ICONS/Trade_Engineering:28:28:-15:0|t Cerrar.", 0, 100);
+        AddGossipItemFor(player, 0, "|TInterface/ICONS/Trade_Engineering:28:28:-15:0|t Close.", 0, 100);
 
         SendGossipMenuFor(player, PET_INFO, creature->GetGUID());
         return true;
