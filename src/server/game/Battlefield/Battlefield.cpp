@@ -164,25 +164,25 @@ bool Battlefield::Update(uint32 diff)
         return false;
 
     //TODO: Check player logout
-    if (!IsWarTime()) {
-        for (uint8 team = 0; team < PVP_TEAMS_COUNT; ++team) {
-            GuidUnorderedSet copy(m_PlayersInQueue[team]);
-            for (GuidUnorderedSet::const_iterator itr = copy.begin(); itr != copy.end(); ++itr) {
-                if (Player* player = ObjectAccessor::FindPlayer(*itr)) {
+    //if (!IsWarTime()) {
+    //    for (uint8 team = 0; team < PVP_TEAMS_COUNT; ++team) {
+    //        GuidUnorderedSet copy(m_PlayersInQueue[team]);
+    //        for (GuidUnorderedSet::const_iterator itr = copy.begin(); itr != copy.end(); ++itr) {
+    //            if (Player* player = ObjectAccessor::FindPlayer(*itr)) {
 
-                } else {
-                    m_PlayersInQueue[team].erase(*itr);
-                    // Send to World
-                    if (sWorld->getBoolConfig(CONFIG_BATTLEGROUND_QUEUE_ANNOUNCER_ENABLE)) {
-                        uint32 minPlayerPerTeam = sWorld->getIntConfig(CONFIG_WINTERGRASP_PLR_MIN_PER_TEAM);
-                        std::string text = "[SERVER] Player logout from queue Wintergrasp Battle! " + std::to_string(m_PlayersInQueue[0].size()) + " vs " + std::to_string(m_PlayersInQueue[1].size());
-                        sWorld->SendServerMessage(SERVER_MSG_STRING, text);
-                    }
-                    break;
-                }
-            }
-        }
-    }
+    //            } else {
+    //                m_PlayersInQueue[team].erase(*itr);
+    //                // Send to World
+    //                if (sWorld->getBoolConfig(CONFIG_BATTLEGROUND_QUEUE_ANNOUNCER_ENABLE)) {
+    //                    uint32 minPlayerPerTeam = sWorld->getIntConfig(CONFIG_WINTERGRASP_PLR_MIN_PER_TEAM);
+    //                    std::string text = "[SERVER] Player logout from queue Wintergrasp Battle! " + std::to_string(m_PlayersInQueue[0].size()) + " vs " + std::to_string(m_PlayersInQueue[1].size());
+    //                    sWorld->SendServerMessage(SERVER_MSG_STRING, text);
+    //                }
+    //                break;
+    //            }
+    //        }
+    //    }
+    //}
 
     // Invite players a few minutes before the battle's beginning
     if (!IsWarTime() && !m_StartGrouping && m_Timer <= m_StartGroupingTimer)
