@@ -72,6 +72,10 @@ SmartAI::SmartAI(Creature* c) : CreatureAI(c)
 
     mcanSpawn = true;
 
+    _chaseOnInterrupt = false;
+
+    aiDataSet.clear();
+
     // Xinef: Vehicle conditions
     m_ConditionsTimer = 0;
     if (me->GetVehicleKit())
@@ -658,6 +662,7 @@ void SmartAI::EnterEvadeMode(EvadeReason /*why*/)
     if (me->GetCharmerGUID().IsPlayer() || me->HasUnitFlag(UNIT_FLAG_POSSESSED))
     {
         me->AttackStop();
+        me->RemoveUnitFlag(UNIT_FLAG_IN_COMBAT);
         return;
     }
 
@@ -775,6 +780,7 @@ void SmartAI::JustRespawned()
     mFollowArrivedEntry = 0;
     mFollowCreditType = 0;
     mFollowArrivedAlive = true;
+    aiDataSet.clear();
 }
 
 void SmartAI::JustReachedHome()
@@ -848,6 +854,7 @@ void SmartAI::AttackStart(Unit* who)
             {
                 me->GetMotionMaster()->MovementExpired();
                 me->StopMoving();
+                me->GetMotionMaster()->Clear(false);
             }
 
             me->GetMotionMaster()->MoveChase(who);
@@ -893,7 +900,7 @@ void SmartAI::IsSummonedBy(WorldObject* summoner)
     GetScript()->ProcessEventsFor(SMART_EVENT_JUST_SUMMONED, summoner->ToUnit(), 0, 0, false, nullptr, summoner->ToGameObject());
 }
 
-void SmartAI::DamageDealt(Unit* doneTo, uint32& damage, DamageEffectType /*damagetype*/)
+void SmartAI::DamageDealt(Unit* doneTo, uint32& damage, DamageEffectType /*damagetype*/, SpellSchoolMask /*damageSchoolMask*/)
 {
     GetScript()->ProcessEventsFor(SMART_EVENT_DAMAGED_TARGET, doneTo, damage);
 }
@@ -959,8 +966,12 @@ void SmartAI::DoAction(int32 param)
     GetScript()->ProcessEventsFor(SMART_EVENT_ACTION_DONE, nullptr, param);
 }
 
-uint32 SmartAI::GetData(uint32 /*id*/) const
+uint32 SmartAI::GetData(uint32 id) const
 {
+    auto const& itr = aiDataSet.find(id);
+    if (itr != aiDataSet.end())
+        return itr->second;
+
     return 0;
 }
 
@@ -976,6 +987,7 @@ void SmartAI::SetData(uint32 id, uint32 value, WorldObject* invoker)
             gob = invoker->ToGameObject();
     }
 
+    aiDataSet[id] = value;
     GetScript()->ProcessEventsFor(SMART_EVENT_DATA_SET, unit, id, value, false, nullptr, gob);
 }
 

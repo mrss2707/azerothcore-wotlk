@@ -49,6 +49,7 @@
 #include "SharedDefines.h"
 #include "SteadyTimer.h"
 #include "World.h"
+#include "WorldSessionMgr.h"
 #include "WorldSocket.h"
 #include "WorldSocketMgr.h"
 #include <boost/asio/signal_set.hpp>
@@ -126,7 +127,7 @@ int main(int argc, char** argv)
     auto vm = GetConsoleArguments(argc, argv, configFile, configService);
 
     // exit if help or version is enabled
-    if (vm.count("help"))
+    if (vm.count("help") || vm.count("version"))
         return 0;
 
 #if AC_PLATFORM == AC_PLATFORM_WINDOWS
@@ -285,7 +286,7 @@ int main(int argc, char** argv)
 
     sMetric->Initialize(realm.Name, *ioContext, []()
     {
-        METRIC_VALUE("online_players", sWorld->GetPlayerCount());
+        METRIC_VALUE("online_players", sWorldSessionMgr->GetPlayerCount());
         METRIC_VALUE("db_queue_login", uint64(LoginDatabase.QueueSize()));
         METRIC_VALUE("db_queue_character", uint64(CharacterDatabase.QueueSize()));
         METRIC_VALUE("db_queue_world", uint64(WorldDatabase.QueueSize()));
@@ -357,8 +358,8 @@ int main(int argc, char** argv)
 
     std::shared_ptr<void> sWorldSocketMgrHandle(nullptr, [](void*)
     {
-        sWorld->KickAll();              // save and kick all players
-        sWorld->UpdateSessions(1);      // real players unload required UpdateSessions call
+        sWorldSessionMgr->KickAll();         // save and kick all players
+        sWorldSessionMgr->UpdateSessions(1); // real players unload required UpdateSessions call
 
         sWorldSocketMgr.StopNetwork();
 
@@ -732,13 +733,11 @@ variables_map GetConsoleArguments(int argc, char** argv, fs::path& configFile, [
     }
 
     if (vm.count("help"))
-    {
         std::cout << all << "\n";
-    }
+    else if (vm.count("version"))
+        std::cout << GitRevision::GetFullVersion() << "\n";
     else if (vm.count("dry-run"))
-    {
         sConfigMgr->setDryRun(true);
-    }
 
     return vm;
 }
